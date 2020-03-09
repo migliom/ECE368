@@ -9,13 +9,12 @@ listNode *readFromFile(char * filename)
 {
 	FILE *fptr = fopen(filename, "r");
 	if(fptr == NULL){
-		fclose(fptr);
-		return NULL;
+		return EXIT_FAILURE;
 	}
 	listNode *head = malloc(sizeof(listNode));
 	if(head == NULL){
-		fputs(stdout, "No memory in the program");
-		return NULL;
+		fputs(stderr, "No memory in the program");
+		return EXIT_FAILURE;
 	}
 
 	char arr[MAX_SIZE];
@@ -30,7 +29,12 @@ listNode *readFromFile(char * filename)
 	int y = 0;
 	int height = 0;
 	int width = 0;
-	fgets(arr, MAX_SIZE, fptr);
+	if(fgets(arr, MAX_SIZE, fptr) == NULL)
+	{
+		fclose(fptr);
+		return NULL;
+	}
+
 	if(arr[0] == 'V' ||  arr[0] == 'H')
 		division = arr[0];
 	else
@@ -80,9 +84,14 @@ void preOrderPrint(char *filename, listNode *lnode)
 	FILE *fptr = fopen(filename, "w");
 	if(fptr == NULL)
 	{
+		return EXIT_FAILURE;
+	}
+	if(lnode == NULL)
+	{
 		fclose(fptr);
 		return;
 	}
+
 	treeNode *tn = lnode -> treepoint;
 	if(tn == NULL)
 	{
@@ -118,6 +127,10 @@ void printToFile(char *filename, listNode *lnode)
 {
 	FILE *fptr = fopen(filename, "w");
 	if(fptr == NULL)
+	{
+		return EXIT_FAILURE;
+	}
+	if(lnode == NULL)
 	{
 		fclose(fptr);
 		return;
@@ -156,19 +169,7 @@ static void packingHelper2(treeNode *tn, int xCoordinate, int yCoordinate)
 	{
 		return;
 	}
-	// if node == 'H'
-	// packingHelper2(right, int xCoord, int Ycoord
-	// packingHelper2(left, xCoord, (Ycoord + right -> height))
-	//
-	// if node == 'V'
-	// packingHelper2(left, int xCoord, int Ycoord
-	// packingHelper2(right, (Xcoord + left -> width), y)
-	// 
-	// if node == $
-	// node -> finalX = xCoord
-	// node -> finalY = yCoord
-	//
-	// return;
+	
 	treeNode *left = tn -> left;
 	treeNode *right = tn -> right;
 
@@ -192,6 +193,15 @@ static void packingHelper2(treeNode *tn, int xCoordinate, int yCoordinate)
 void packing(char *filename, treeNode *tn)
 {
 	FILE *fptr = fopen(filename, "w");
+	if(fptr == NULL)
+	{
+		return EXIT_FAILURE;
+	}
+	if(tn == NULL)
+	{
+		fclose(fptr);
+		return;
+	}
 	packingHelper2(tn, 0, 0);
 	packingHelper1(fptr, tn);
 	fclose(fptr);
