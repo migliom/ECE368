@@ -12,7 +12,7 @@ int main(int argc, char ** argv)
 	}
 	listNode *head = readFromFile(argv[1]);
 	if(head == NULL)
-		return EXIT_FAILURE;
+		return;
 	preOrderPrint(argv[2], head);
 	printToFile(argv[3], head);
 	packing(argv[4], head->treepoint);
