@@ -9,7 +9,7 @@ void createTreeNode(listNode ** lnode)
 {
 	treeNode *tnode = malloc(sizeof(treeNode));
 	if(tnode == NULL){
-			fputs(stdout, "Program ran out of memory\0");
+			fputs(stderr, "Program ran out of memory\0");
 			return;
 	}
 	tnode -> right = NULL;
