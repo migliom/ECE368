@@ -11,19 +11,6 @@ int main(int argc, char **argv)
   }
   unsigned long totDecomp = 0;
   unsigned long *arr = findFreq(argv[1], &totDecomp);
-  if(totDecomp == 0)
-  {
-    FILE *fptr = fopen(argv[2], "w");
-    fclose(fptr);
-    FILE *fptr1 = fopen(argv[3], "w");
-    fclose(fptr1);
-    FILE *fptr2 = fopen(argv[4], "w");
-    fclose(fptr2);
-    FILE *fptr3 = fopen(argv[5], "w");
-    fclose(fptr3);
-    free(arr);
-    return EXIT_SUCCESS;
-  }
 
   if(arr == NULL)
   {
@@ -66,7 +53,6 @@ int main(int argc, char **argv)
   int rowNum = 256;
   int *preOrder = malloc(size * sizeof(int));
   writeCode(argv[4], codeTable, row, col, Ln->treePoint, preOrder);
-  //free(preOrder);
   compressFile(argv[1], argv[5], codeTable, rowNum, col, Ln->treePoint, totDecomp, charArraySize, size);
   for(int i = 0; i < rowNum; i++)
   {
