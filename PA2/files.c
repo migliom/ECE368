@@ -102,39 +102,34 @@ listNode* buildLinked(unsigned long *arr, int size)
 }
 
 /*\/\/\/\/\/\\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\\.\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
-static void writeTreeHelper(treeNode *tn, FILE *fptr1)
+static int writeTreeHelper(treeNode *tn, FILE *fptr1)
 {
   if(tn == NULL)
     return;
-  if(tn->value == 0){
-      //arr[(*counter)] = '0';
-      //++(*counter);
+  if((tn->left != NULL) && (tn->right != NULL)){
 			fputc('0', fptr1); 
   }
-  else if(tn->value != 0){
-    //arr[(*counter)] = '1';
+	else if((tn -> value) == 1)
+		return 1;
+  else /*if(tn->value != 0)*/{
 		fputc('1', fptr1);
 		int temp = tn -> value;
 		fputc(temp, fptr1);
-    //++(*counter);
-    //arr[(*counter)] = (char)(tn -> value);
-    //++(*counter);
   }
   writeTreeHelper(tn->left, fptr1);
   writeTreeHelper(tn->right, fptr1);
+	return 0;
 }
-writeTree(char *filename, treeNode *tn, int *counter, char *arr)
+writeTree(char *filename, treeNode *tn)
 {
-  //if(tn == NULL)
-    //return;
   FILE *fptr = fopen(filename, "w");
   if(fptr == NULL)
   {
     return;
   }
-  writeTreeHelper(tn, fptr);
+  int emptyCheck = writeTreeHelper(tn, fptr);
   fclose(fptr);
-  return;
+  return emptyCheck;
 }
 /*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
  */
@@ -163,20 +158,20 @@ void writeCode(char *filename, int **codeTable, int row, int col, treeNode *tn, 
   }
   int arrInd = 0;
   arr = writeCodeHelper(tn, arr, &arrInd);
-  for(int i = 0; i < arrInd; i++)
-  {
-    //char character = arr[i];
-    fputc(arr[i], fptr);
-    fputc(':', fptr);
-    for(int j = 0; j < col; j++)
-    {
-      if(codeTable[(arr[i])][j] == 1)
-			//if(codeTable[i][j] == 0)
-				fputc('1',fptr);
-      if(codeTable[(arr[i])][j] == 0)
-				fputc('0', fptr);
-    }
-   fprintf(fptr, "\n"); 
+	if(arrInd > 1){
+  	for(int i = 0; i < arrInd; i++)
+  	{
+    	fputc(arr[i], fptr);
+    	fputc(':', fptr);
+    	for(int j = 0; j < col; j++)
+    	{
+      	if(codeTable[(arr[i])][j] == 1)
+					fputc('1',fptr);
+      	if(codeTable[(arr[i])][j] == 0)
+					fputc('0', fptr);
+    	}
+   	fprintf(fptr, "\n"); 
+		}
   } 
   fclose(fptr);
   return;
@@ -203,14 +198,15 @@ static void numCompressed(treeNode *tn,  int **codeBook, unsigned long *counter)
     return;
   treeNode *left=tn->left;
   treeNode *right=tn->right;
-  if(left == NULL && right == NULL)
+  if(left == NULL && right == NULL && (tn->value != 1))
   {
     //int row = (int)tn->value;
     (*counter) += 9;
     return;
   }
   numCompressed(left, codeBook, counter);
-	(*counter) += 1;
+	if(tn -> value != 1)
+		(*counter) += 1;
   numCompressed(right, codeBook, counter);
    return;
 }
@@ -220,10 +216,10 @@ static void preOrderTraversalOutput(FILE *fptr2, treeNode *tn, unsigned char *bi
     return;
   treeNode *left = tn->left;
   treeNode *right = tn->right;
-	if(tn->value == 0){
+	if(tn->left != NULL){
      compressFileHelper(fptr2, 0, bitIndex, endOfByte); 
   }
-  if(left == NULL && right == NULL){
+  if(left == NULL && right == NULL & (tn->value != 1)){
     compressFileHelper(fptr2, 1, bitIndex, endOfByte);
 		unsigned char mask = 0x1; //starts at least significant position of 00000001 and goes left
 		for(int i = 1; i < 9; i++)
@@ -236,7 +232,7 @@ static void preOrderTraversalOutput(FILE *fptr2, treeNode *tn, unsigned char *bi
    preOrderTraversalOutput(fptr2, left, bitIndex, endOfByte);
    preOrderTraversalOutput(fptr2, right, bitIndex, endOfByte);
 }
-void compressFile(char *inputFile, char *outputFile, int **codeTable, int rowMax, int colMax, treeNode *tn, unsigned long decompTotal, int sizeA, int sizeB)
+void compressFile(char *inputFile, char *outputFile, int **codeTable, treeNode *tn, unsigned long decompTotal)
 {
   FILE *fptr1 = fopen(inputFile, "r");
   if(fptr1 == NULL){
@@ -253,8 +249,8 @@ void compressFile(char *inputFile, char *outputFile, int **codeTable, int rowMax
   unsigned long compressedCounter = 0;
   unsigned char bitCounter = 0;
   unsigned char byteMax = 0;
-  int preorderNum = (sizeA - sizeB);
-  numCompressed(tn, codeTable, &compressedCounter);
+  
+	numCompressed(tn, codeTable, &compressedCounter);
 
 	if(compressedCounter % 8 == 0)
 		compressedCounter /= 8;
@@ -280,7 +276,7 @@ void compressFile(char *inputFile, char *outputFile, int **codeTable, int rowMax
     {
       row = buffer;
       col = 0;
-      while(col < colMax && (codeTable[row][col] != -1))
+      while(codeTable[row][col] != -1)
       {
         unsigned char temp = codeTable[row][col];
         compressFileHelper(fptr2, (codeTable[row][col] == 1), &bitCounter, &byteMax);
@@ -293,12 +289,12 @@ void compressFile(char *inputFile, char *outputFile, int **codeTable, int rowMax
 	
 	bitCounter = 0;
   byteMax = 0;
-  
-	totalComp = ftell(fptr2);
+ 	 
+		totalComp = ftell(fptr2);
 	
-	int seek = fseek(fptr2, 0, SEEK_SET);
+		int seek = fseek(fptr2, 0, SEEK_SET);
 
-  fwrite(&totalComp, sizeof(unsigned long), 1, fptr2);
+  	fwrite(&totalComp, sizeof(unsigned long), 1, fptr2);
 	fclose(fptr1);
   fclose(fptr2);
   return;

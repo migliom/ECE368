@@ -26,25 +26,17 @@ int main(int argc, char **argv)
   mergeSort(&ln);
   free(arr);
   int size = 0;
-  int writeCounter = 0;
-  listNode *lCount = ln;
+
+	listNode *lCount = ln;
   while(lCount != NULL)
   {
     ++size;
     lCount = lCount -> next;
   }
   listNode *Ln = buildHuff(ln);  //build the huffman tree pointed to by ln
-  int charArraySize = ((size*2)+(size-1));
-  char *charArr[charArraySize + 1]; //create array to store preorder traversal values 
-  for(int ind1 = 0; ind1 < charArraySize + 1; ind1++)
-  {
-    charArr[ind1] = 0;
-  }
-  writeTree(argv[3], (Ln->treePoint), &writeCounter, charArr); //write tree file
-  for(int temp1 = 0; temp1 < (charArraySize); temp1++)
-  {
-    printf("%c", charArr[temp1]);
-  }
+  
+	writeTree(argv[3], (Ln->treePoint)); //write tree file
+  
   int row = 0;
   int col = 0;
   int **codeTable = codeBook(Ln, &row, &col); //in this program we free ln and create 2D array
@@ -53,7 +45,7 @@ int main(int argc, char **argv)
   int rowNum = 256;
   int *preOrder = malloc(size * sizeof(int));
   writeCode(argv[4], codeTable, row, col, Ln->treePoint, preOrder);
-  compressFile(argv[1], argv[5], codeTable, rowNum, col, Ln->treePoint, totDecomp, charArraySize, size);
+  compressFile(argv[1], argv[5], codeTable, Ln->treePoint, totDecomp);
   for(int i = 0; i < rowNum; i++)
   {
     int *currentArr = codeTable[i];

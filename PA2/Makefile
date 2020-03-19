@@ -16,7 +16,7 @@ pa3: $(OBJS)
 testmemory: pa2
 	$(VAL)	./pa2 original/lorum myLorum.count myLorum.tree myLorum.code myLorum.hbt
 
-testall: test1 test2 test3 test4 test5 test6
+testall: test1 test2 test3 test4 test6 test5
 
 test1: pa2
 	./pa2 original/lorum myLorum.count myLorum.tree myLorum.code myLorum.hbt	

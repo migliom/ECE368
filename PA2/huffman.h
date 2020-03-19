@@ -23,12 +23,12 @@ void MergeSort(listNode ** ln);
 listNode *buildHuff(listNode *sortedList);
 int writeCount(char *filename, unsigned long *arr);
 
-writeTree(char *filename, treeNode *tn, int *count,char *arr);
+int writeTree(char *filename, treeNode *tn);
 
 int **codeBook(listNode *ln, int *row, int *col);
 
 void writeCode(char *outputFile, int **arr, int row, int col, treeNode *tn, int *preOrder);
-void compressFile(char *input, char *output, int **codebook, int rowMax, int colMax, treeNode *tn, unsigned long, int charrArraySize, int size2);
+void compressFile(char *input, char *output, int **codebook, treeNode *tn, unsigned long size);
 void destory(treeNode *tn);
 #endif
 
