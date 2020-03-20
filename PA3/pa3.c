@@ -7,7 +7,6 @@
 int main(int argc, char ** argv)
 {
 	if(argc != 5){
-		fputs(stderr, "Need more input arguments");
 		return EXIT_FAILURE;
 	}
 	listNode *head = readFromFile(argv[1]);
