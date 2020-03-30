@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 	if(argc < 3)
 		return EXIT_FAILURE;
 	
-	if(argv[1][1] == 101)
+	if(argv[1][1] == 'e')
 	{
 		int isBST = 1;
 		int isBalanced = 0;
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 		return EXIT_SUCCESS;
 	}
 
-	if(argv[1][1] == 98)
+	if(argv[1][1] == 'b')
 	{
 		int fileCheck;
 		Tnode *root = NULL;

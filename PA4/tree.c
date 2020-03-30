@@ -5,7 +5,7 @@
 
 Tnode *createNode(int key, char children)
 {
-	Tnode *node = malloc(sizeof(node));
+	Tnode *node = malloc(sizeof(*node));
 	node -> key = key;
 	node -> balance = children;
 	node -> left = NULL;
@@ -30,27 +30,27 @@ Tnode *inserTnode(Tnode *tn, int val)
 
 		int balance = getBalance(tn);
 
-		//case 1: if you insert to the left of the left child node 
+		//case 2: if you insert to the left of the left child node 
 		if(balance > 1 && (tn -> left -> key) > val)
 		{
 			return clockRotation(tn);
 		}
 
-		//Case 2: insert to the right of the left child
+		//Case 2a: insert to the right of the left child
 		else if(balance > 1 && (tn -> left -> key) < val)
 		{
 			tn -> left = counterClockRotation(tn -> left);
 			return clockRotation(tn);
 		}
 
-		//case 3: insert to the left of the right child
+		//case 2b: insert to the left of the right child
 		else if(balance < -1 && (tn -> right -> key) > val)
 		{
 			tn -> right = clockRotation(tn -> right);
 			return counterClockRotation(tn);
 		}
 
-		//Case 4: insert to the right of the right child
+		//Case 2c: insert to the right of the right child
 		else if(balance < -1 && (tn -> right -> key) < val)
 		{
 			return counterClockRotation(tn);
@@ -58,6 +58,34 @@ Tnode *inserTnode(Tnode *tn, int val)
 
 		return tn;
 }
+static Tnode *deleteHelper(Tnode *parent, Tnode *child, int *foundP)
+{
+	if(child -> right != NULL)
+		child->right = deleteHelper(parent, child->right, foundP);
+	
+	(*foundP) = 1;
+	if(child -> left != NULL && (*foundP))
+	{
+		Tnode *temp = child -> left;
+		parent -> key = child -> key;
+		free(child);
+		(*foundP) = 0;
+		return temp;
+	}
+	else if(child -> left == NULL && (*foundP))
+	{
+		(*foundP = 0);
+		return NULL;
+	}
+}
+static Tnode* immediatePredecessor(Tnode *tn)
+{
+	//recieves the node to be deleted
+	int foundP = 0;
+	return deleteHelper(tn, tn->right, &foundP);
+}
+	
+	
 
 Tnode *deleteNode(Tnode* tn, int val)
 {
@@ -94,16 +122,19 @@ Tnode *deleteNode(Tnode* tn, int val)
 		return temp;
 	}
 
-	Tnode * immediateChild = tn ->  right; 
-	while ((immediateChild -> left) != NULL)
+	Tnode * immediateChild = tn -> left; 
+	while ((immediateChild -> right) != NULL)
 	{
-		immediateChild = immediateChild -> left;
+		immediateChild = immediateChild -> right;
 	} 
 	
 	tn ->  key = immediateChild -> key;
 	immediateChild -> key = val;
 	
-	tn ->  right = deleteNode(tn ->  right, val);
+	tn -> left = deleteNode(tn -> left, val);
+	
+	//if((tn->right) != NULL && (tn->left) != NULL)
+	//	return (immediatePredecessor(tn));
 	
 	int nodeBalance = getBalance(tn);
 	if(nodeBalance < -1)
