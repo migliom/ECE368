@@ -95,7 +95,7 @@ Tnode *readOperationsFile(char *filename, int *fileCheck)
 	Tnode *tn = NULL;
 	while((fread(&temp, sizeof(int), 1, fptr)) != 0){
 		fread(&operationType, sizeof(char), 1, fptr);
-
+	//have check
 		if(operationType == 'i')
 			tn = inserTnode(tn, temp);
 

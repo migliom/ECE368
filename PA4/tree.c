@@ -31,7 +31,7 @@ Tnode *inserTnode(Tnode *tn, int val)
 		int balance = getBalance(tn);
 
 		//case 2: if you insert to the left of the left child node 
-		if(balance > 1 && (tn -> left -> key) > val)
+		if(balance > 1 && (tn -> left -> key) >= val)
 		{
 			return clockRotation(tn);
 		}
@@ -85,8 +85,6 @@ static Tnode* immediatePredecessor(Tnode *tn)
 	return deleteHelper(tn, tn->right, &foundP);
 }
 	
-	
-
 Tnode *deleteNode(Tnode* tn, int val)
 {
 	if (tn == NULL) { return NULL; }
@@ -137,24 +135,22 @@ Tnode *deleteNode(Tnode* tn, int val)
 	//	return (immediatePredecessor(tn));
 	
 	int nodeBalance = getBalance(tn);
-	if(nodeBalance < -1)
+	switch(nodeBalance)
 	{
-		if(getBalance(tn->left) <= 0)
-			return clockRotation(tn); //left-left
-		else{
-			tn -> left = counterClockRotation(tn -> left);
-			return clockRotation(tn);
-		}
-	}
-	else if(nodeBalance > 1)
-	{
-		if(getBalance(tn->right >= 0)){
-			return counterClockRotation(tn);
-		}
-		else{
-			tn -> right = clockRotation(tn -> right);
-				return counterClockRotation(tn);
-		}
+		case -2:	if(getBalance(tn->left) < 1)
+								return clockRotation(tn);
+							else{
+								tn->left = counterClockRotation(tn->left);
+								return clockRotation(tn);
+							}
+							break;
+		case 2:	if(getBalance(tn->left) > -1)
+								return counterClockRotation(tn);
+							else{
+								tn->right = clockRotation(tn->right);
+								return counterClockRotation(tn);
+							}
+							break;
 	}
 	return tn;  
 }
@@ -164,8 +160,8 @@ int getBalance(Tnode *tn)
 	if(tn == NULL)
 		return 0;
 	return(height(tn -> left) - height(tn -> right));
-
 }
+
 Tnode *counterClockRotation(Tnode* tn)
 { 
 	//Dr. Koh special
@@ -175,6 +171,7 @@ Tnode *counterClockRotation(Tnode* tn)
 	tn -> right = temp_ptr;
 	return newRoot;
 }
+
 Tnode *clockRotation(Tnode* tn)
 {	
 	//Dr.Koh Special pt. 2
@@ -196,7 +193,7 @@ int max(int a, int b)
 int height(Tnode *tn)
 {	
 	if(tn == NULL)
-		return 0;
+		return -1;
 	return (1 + max(height(tn->left), height(tn->right)));
 	
 }
@@ -217,6 +214,7 @@ int checkBalance(Tnode *tn)
 	return 0;
 
 }
+
 void deleteTree(Tnode* root)
 {
 	if(root == NULL)
