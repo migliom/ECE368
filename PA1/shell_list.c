@@ -42,6 +42,7 @@ Node *List_Load_From_File(char *filename)
   int firstTime = 0;
   while(fread(&temp_value, sizeof(long), 1, fptr))
   {
+		fprintf(stdout, "%ld\n", temp_value);
     if(firstTime != 1)
     {
       q -> value = temp_value;
@@ -78,52 +79,50 @@ static Column *buildColumns(Column *head, int k)
   for(int i = 0; i < (k-1); i++)
   {
     q -> next = malloc(sizeof(Column));
+		q -> next -> node = NULL;
     q = q -> next;
     q -> next = NULL;
   }
-
+	q -> next = head;
   return head;
 }
 //--------------------------------------------------------------------------//
 static Column *addNodes(Column *head, Node *List, int k, int size)
 {
-  int totalCount = 1;
-  Column *cq = head;
-  int tracker = 0; //ind to compare with k
-  Node *p = List; //resetter for list
-  Node *q = List; //node to traverse while list
-  Node *n, *temp; //temp variable to maintain addresses
-  p = p->next;
-  cq->node = n;
-  n = q;
-  q = q->next;
-  ++tracker;
-  n -> next = NULL;
-  temp = q;
-  ++totalCount; 
-  while(totalCount < size)
-  {
-    cq -> node = n;
-    while(q != NULL)
-    {
-      if(tracker = k)
-      {
-        q = q->next;
-        tracker = 0;
-        temp->next = q->next;
-        temp = q;  
-        q = q->next;
-        n = temp;
-        temp = q;
-        n->next = NULL;
-        ++tracker;
-      }
-      
-      ++tracker;
-        
-    }
-    q = p; 
-  }
+	Column *colMover = head -> next;
+	Node * nodeMover = List -> next;
+
+	head -> node = List;
+	head -> node -> next = NULL;
+	Node *temp = NULL;
+	int mover = 0;
+	int kTracker = 1;
+
+	while(nodeMover != NULL)
+	{
+		Node * colNode = colMover -> node;
+		if(colNode == NULL){
+			temp = nodeMover -> next;
+			colNode = nodeMover;
+			colNode -> next = NULL;
+			nodeMover = temp;
+			colMover -> node = colNode;
+			colMover = colMover -> next;
+		}
+		else{
+			while((colNode -> next) != NULL)
+			{
+				colNode = colNode -> next;
+			}
+			temp = nodeMover -> next;
+			colNode -> next = nodeMover;
+			(colNode -> next -> next)= NULL;
+			nodeMover = temp;
+			colMover -> node = colNode;
+			colMover = colMover -> next;
+		}
+	}
+	return head;
 }
 //-------------------------------------------------------------------------//
 
@@ -138,7 +137,8 @@ static Column *sortCol(Column *head, int k, int size)
 {
   Column *colTracker = head;
   int i, j, on, depth = 0; //integers to keep track of for loop
-  while(colTracker != NULL)
+	int kTracker = 1;
+  while(kTracker != k)
   {
     Node *h = colTracker -> node;
     Node *depthCounter = h;
@@ -170,6 +170,7 @@ static Column *sortCol(Column *head, int k, int size)
       }
     }
     colTracker = colTracker -> next;
+		++kTracker;
     depth = 0;
   }
   return head;
@@ -232,9 +233,9 @@ Node *List_Shellsort(Node *List, long *n_comp)
   head = buildColumns(head, k); 
   while(k > 0)
   {
-    //head = addNodes(head, List, k, size);
-    //head = sortCol(head, k, size);
-    //List = putBack(head, List, k, size);
+    head = addNodes(head, List, k, size);
+    head = sortCol(head, k, size);
+    List = putBack(head, List, k, size);
     head = deleteColumns(head);
     head = malloc(sizeof(Column));
     if((k/3) > 0)
