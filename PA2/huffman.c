@@ -7,7 +7,7 @@ static treeNode *mergeHuffTree(treeNode *t1, treeNode *t2)
   treeNode *tn = malloc(sizeof(treeNode));
   tn -> left = t1;
   tn -> right = t2;
-  tn -> value = '\0';
+  tn -> value = 229;
   tn -> freq = ((t1->freq) + (t2->freq));
   return tn;
 }

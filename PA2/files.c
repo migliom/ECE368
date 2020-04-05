@@ -78,7 +78,7 @@ listNode* buildLinked(unsigned long *arr, int size)
     ++index;
   }
 
-  if(index == size)
+  if(index == (size + 1))
   {
     return NULL; //means array has no letters w/ freq > 0
   }
@@ -106,16 +106,23 @@ static int writeTreeHelper(treeNode *tn, FILE *fptr1)
 {
   if(tn == NULL)
     return;
+	
+	if(tn -> left == NULL) //&& tn->value != 1)
+	{
+		fputc('1', fptr1);
+		int temp = tn -> value;
+		fputc(temp, fptr1);}
+
   if((tn->left != NULL) && (tn->right != NULL)){
 			fputc('0', fptr1); 
   }
-	else if((tn -> value) == 1)
+	/*else if((tn -> value) == 1)
 		return 1;
-  else /*if(tn->value != 0)*/{
+  else if(tn->value != 229){
 		fputc('1', fptr1);
 		int temp = tn -> value;
 		fputc(temp, fptr1);
-  }
+  }*/
   writeTreeHelper(tn->left, fptr1);
   writeTreeHelper(tn->right, fptr1);
 	return 0;
@@ -219,7 +226,8 @@ static void preOrderTraversalOutput(FILE *fptr2, treeNode *tn, unsigned char *bi
 	if(tn->left != NULL){
      compressFileHelper(fptr2, 0, bitIndex, endOfByte); 
   }
-  if(left == NULL && right == NULL & (tn->value != 1)){
+  if(left == NULL && right == NULL)
+	{
     compressFileHelper(fptr2, 1, bitIndex, endOfByte);
 		unsigned char mask = 0x1; //starts at least significant position of 00000001 and goes left
 		for(int i = 1; i < 9; i++)

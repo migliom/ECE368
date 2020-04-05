@@ -22,7 +22,10 @@ int main(int argc, char **argv)
   listNode *ln = NULL; //malloc(sizeof(treeNode));
   ln = buildLinked(arr, arrLen);
   if(ln == NULL)
-    return EXIT_FAILURE;
+  {
+		ln = malloc(sizeof(listNode*));
+		ln -> treePoint = NULL;
+	}
   mergeSort(&ln);
   free(arr);
   int size = 0;
