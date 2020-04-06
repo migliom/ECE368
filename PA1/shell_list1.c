@@ -13,7 +13,6 @@ static void *addNode(Node *add, long varo)
    if(add -> next == NULL)
    {
      add -> next  = malloc(sizeof(Node));
-		 add -> next -> tail = NULL;
      add -> next -> value = varo; 
      add -> next -> next = NULL;
      return;
@@ -38,9 +37,6 @@ Node *List_Load_From_File(char *filename, int *totCount)
   long temp_value;
   Node *head = NULL;
   head = malloc(sizeof(Node));
-	head -> next = NULL;
-	head -> value = 0;
-	head -> tail = NULL;
   Node *q = head; 
   q -> next = NULL;
   int firstTime = 0;
@@ -60,6 +56,7 @@ Node *List_Load_From_File(char *filename, int *totCount)
     }
   }
   fclose(fptr);
+
   return head;
 } 
 
@@ -92,106 +89,82 @@ static Column *buildColumns(Column *head, int k)
   return head;
 }
 //--------------------------------------------------------------------------//
-static Column *addNodes(Column *head, Node *List, long *n_comp)
+static Node *pq_sort(Node **head, Node *nodeMover, long *n_comp)
+{
+	Node * temp = NULL;
+	Node * curr = (*head) -> next;
+	Node * prev = (*head);
+
+	while(curr != NULL && (curr -> value) < (nodeMover -> value))
+	{
+		++(*n_comp);
+		curr = curr->next;
+		prev = prev -> next;
+	}
+
+	prev -> next = nodeMover;
+	temp = nodeMover -> next;
+	prev -> next -> next = curr;
+	return temp;
+}
+
+static Column *addNodes(Column *head, Node *List, int k, int size, long *n_comp)
 {
 	Column *colMover = head -> next;
 	Node * nodeMover = List -> next;
 
 	head -> node = List;
 	head -> node -> next = NULL;
-	head -> node -> tail = head->node;
 	Node *temp = NULL;
-	Node *colTemp = NULL;
-
+	Node *colNodeTemp = NULL;
 	while(nodeMover != NULL)
 	{
 		if(colMover == NULL)
 			colMover = head;
-		if(colMover -> node == NULL){
+		Node * colNode = colMover -> node;
+		if(colNode == NULL){
+			++(*n_comp);
 			temp = nodeMover -> next;
-			colMover -> node  = nodeMover;
-			colMover -> node -> next = NULL;
-			colMover -> node -> tail = colMover -> node;
+			colNode = nodeMover;
+			colNode -> next = NULL;
 			nodeMover = temp;
+			colMover -> node = colNode;
+			colMover = colMover -> next;
 		}
 		else{
-			if(nodeMover->value <= colMover -> node -> value)
+			if(nodeMover -> value <= colNode -> value)
 			{
-				temp = nodeMover -> next;
-				colTemp = colMover -> node;
+				++(*n_comp);
+				colNodeTemp = colNode;
 				colMover -> node = nodeMover;
-				colMover -> node -> next = colTemp;
-				colMover -> node -> tail = colMover -> node -> next -> tail;
-				colMover -> node -> next -> tail = NULL;
+				temp = nodeMover -> next;
+				colMover -> node -> next = NULL;
+				colMover -> node -> next = colNodeTemp;
 				nodeMover = temp;
 			}
-			else{
-				temp = nodeMover -> next;
-				colMover -> node -> tail -> next  = nodeMover;
-				colMover -> node -> tail -> next -> next = NULL;
-				colMover -> node -> tail = colMover -> node -> tail -> next;
-				nodeMover = temp;
-				}
+			else
+				nodeMover = pq_sort(&(colMover->node), nodeMover, n_comp);
+			colMover = colMover -> next;
 		}
-		colMover = colMover -> next;
-	}
+	}	
 	return head;
 }
-//-------------------------------------------------------------------------//
-static void insert(Node **head, Node *newNode, long *n_comp)
-{
-	Node *current = NULL;
-	if((*head) == NULL || (*head)->value >= newNode->value)
-	{
-		newNode->next = (*head);
-		(*head) = newNode;
-	}
-	else{
-		current = (*head);
-		while(current->next != NULL && current->next->value < newNode -> value)
-		{
-			current = current->next;
-		}
-		newNode->next = current->next;
-		current->next = newNode;
-	}
-}
-static void insertionSort(Node **head, long *n_comp)
-{
-	Node *sorted = NULL;
-	Node *curr = (*head);
-	while(curr != NULL)
-	{
-		Node *next = curr->next;
-		insert(&sorted, curr, n_comp);
-		curr = next;
-	}
-
-	(*head) = sorted;
-}
-static Column *sortCol(Column *head, long *n_comp)
-{
-	Column *colMover = head;
-	while(colMover != NULL)
-	{
-		insertionSort(&(colMover->node), n_comp);
-		colMover = colMover -> next;
-	}
-  return head;
-}
+//------------------------------------------------------------------------
 //--------------------------------------------------------------------------//
 static Node *putBack(Column *head, Node *list, int k, int size)
 {
- 	Column *colMover = head->next;
+  //RECOMBINING LINKED LIST
+  //CANT FIGURE OUT HOW TO RETURN WHOLE LINKEDLIST -> LIST WONT UPDATE 
+  //LIST STAYS THE FIRST NODE IN THE COLUMN INSTEAD OF UPDATING
+	Column *colMover = head -> next;
 	Node *temp = NULL;
 	int counter = 0;
-
-	list = head->node;
-	Node *listMover = list;
 	
-	temp = head->node->next;
+	list = head -> node;
+	Node *listMover = list;
+	temp = head -> node -> next;
 	listMover -> next = NULL;
-	head->node = temp;
+	head -> node = temp;
 
 	while(((++counter) % size) != 0)
 	{
@@ -204,33 +177,32 @@ static Node *putBack(Column *head, Node *list, int k, int size)
 		colMover -> node = temp;
 		colMover = colMover -> next;
 	}
-	return list;
+  return list;
 }
 //--------------------------------------------------------------------------//
-Node *List_Shellsort(Node *List, long *n_comp, int size)
+Node *List_Shellsort(Node *List, long *n_comp, int totalNums)
 {
+  int size = 0;
   Column *head = NULL;
   head = malloc(sizeof(Column));
- 
+ 	Node *q = NULL;
   int k = 0;
-  while(k < size)
+  while(k < totalNums)
   {
     k = (k*3) + 1;
   }
   k = (k-1) / 3;
   head = buildColumns(head, k); 
-  while(k > 1)
+  while(k > 0)
   {
-    head = addNodes(head, List, n_comp);
-    head = sortCol(head, n_comp);
-    List = putBack(head, List, k, size);
+    head = addNodes(head, List, k, totalNums, n_comp);
+    List = putBack(head, List, k, totalNums);
     head = deleteColumns(head);
     head = malloc(sizeof(Column));
-    if((k/3) > 1)
+    if((k/3) > 0)
       head = buildColumns(head, (k/3));
     k = (k-1) / 3;
   }
-	insertionSort(&List, n_comp);
   free(head);
   return(List);
 }
@@ -248,7 +220,6 @@ int List_Save_To_File(char *filename, Node *List)
   Node *listP = List;
   while(listP != NULL)
   {
-		//fprintf(stdout, "%ld\n", listP->value);
     fwrite(listP, sizeof(listP), 1, fptr);
     ++numSaves;
     listP = listP->next;
