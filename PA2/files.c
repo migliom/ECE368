@@ -205,7 +205,7 @@ static void numCompressed(treeNode *tn,  int **codeBook, unsigned long *counter)
     return;
   treeNode *left=tn->left;
   treeNode *right=tn->right;
-  if(left == NULL && right == NULL && (tn->value != 1))
+  if(left == NULL && right == NULL)
   {
     //int row = (int)tn->value;
     (*counter) += 9;
