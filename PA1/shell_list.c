@@ -13,7 +13,6 @@ static void *addNode(Node *add, long varo)
    if(add -> next == NULL)
    {
      add -> next  = malloc(sizeof(Node));
-		 add -> next -> tail = NULL;
      add -> next -> value = varo; 
      add -> next -> next = NULL;
      return;
@@ -38,9 +37,6 @@ Node *List_Load_From_File(char *filename, int *totCount)
   long temp_value;
   Node *head = NULL;
   head = malloc(sizeof(Node));
-	head -> next = NULL;
-	head -> value = 0;
-	head -> tail = NULL;
   Node *q = head; 
   q -> next = NULL;
   int firstTime = 0;
@@ -60,6 +56,7 @@ Node *List_Load_From_File(char *filename, int *totCount)
     }
   }
   fclose(fptr);
+
   return head;
 } 
 
@@ -81,7 +78,7 @@ static Column *buildColumns(Column *head, int k)
 {
   Column *q = head;
   q -> next = NULL;
-  for(int i = 0; i < (k-1); i++)
+  for(int i = 1; i < (k); i++)
   {
     q -> next = malloc(sizeof(Column));
 		q -> next -> node = NULL;
@@ -92,110 +89,99 @@ static Column *buildColumns(Column *head, int k)
   return head;
 }
 //--------------------------------------------------------------------------//
-static Column *addNodes(Column *head, Node *List, long *n_comp)
+static Node *enqueue(Node ** head, Node *insertNode, long *n_comp, int A_D_CHECK)
+{
+	Node *temp = insertNode -> next;
+	insertNode -> next = NULL;
+	Node dummy_head;
+	dummy_head.next = (*head);
+	Node *curr = dummy_head.next;
+	Node *prev = &dummy_head;
+	if(A_D_CHECK == 1){
+		while(curr && curr->value < insertNode -> value)
+		{
+			++(*n_comp);
+			prev = curr;
+			curr = curr->next;
+		}
+	}
+	else{
+		while(curr && curr->value > insertNode -> value)
+		{
+			++(*n_comp);
+			prev = curr;
+			curr = curr->next;
+		}
+	}
+		prev->next = insertNode;
+		insertNode -> next = curr;
+		(*head) = dummy_head.next;
+		return temp;
+}
+static Column *addNodes(Column *head, Node *List, long *n_comp, int check)
 {
 	Column *colMover = head -> next;
 	Node * nodeMover = List -> next;
 
 	head -> node = List;
 	head -> node -> next = NULL;
-	head -> node -> tail = head->node;
 	Node *temp = NULL;
-	Node *colTemp = NULL;
 
 	while(nodeMover != NULL)
 	{
 		if(colMover == NULL)
 			colMover = head;
-		if(colMover -> node == NULL){
-			temp = nodeMover -> next;
-			colMover -> node  = nodeMover;
-			colMover -> node -> next = NULL;
-			colMover -> node -> tail = colMover -> node;
-			nodeMover = temp;
-		}
-		else{
-			if(nodeMover->value <= colMover -> node -> value)
-			{
-				temp = nodeMover -> next;
-				colTemp = colMover -> node;
-				colMover -> node = nodeMover;
-				colMover -> node -> next = colTemp;
-				colMover -> node -> tail = colMover -> node -> next -> tail;
-				colMover -> node -> next -> tail = NULL;
-				nodeMover = temp;
-			}
-			else{
-				temp = nodeMover -> next;
-				colMover -> node -> tail -> next  = nodeMover;
-				colMover -> node -> tail -> next -> next = NULL;
-				colMover -> node -> tail = colMover -> node -> tail -> next;
-				nodeMover = temp;
-				}
-		}
+		//temp = nodeMover -> next;
+		//nodeMover -> next = NULL;
+		nodeMover = enqueue(&(colMover -> node), nodeMover, n_comp, check);
+		//nodeMover = temp;
 		colMover = colMover -> next;
-	}
+	}	
 	return head;
 }
-//-------------------------------------------------------------------------//
-static void insert(Node **head, Node *newNode, long *n_comp)
-{
-	Node *current = NULL;
-	if((*head) == NULL || (*head)->value >= newNode->value)
-	{
-		newNode->next = (*head);
-		(*head) = newNode;
-	}
-	else{
-		current = (*head);
-		while(current->next != NULL && current->next->value < newNode -> value)
-		{
-			current = current->next;
-		}
-		newNode->next = current->next;
-		current->next = newNode;
-	}
-}
-static void insertionSort(Node **head, long *n_comp)
-{
-	Node *sorted = NULL;
-	Node *curr = (*head);
-	while(curr != NULL)
-	{
-		Node *next = curr->next;
-		insert(&sorted, curr, n_comp);
-		curr = next;
-	}
-
-	(*head) = sorted;
-}
-static Column *sortCol(Column *head, long *n_comp)
-{
-	Column *colMover = head;
-	while(colMover != NULL)
-	{
-		insertionSort(&(colMover->node), n_comp);
-		colMover = colMover -> next;
-	}
-  return head;
-}
+//------------------------------------------------------------------------
 //--------------------------------------------------------------------------//
+
+static Node *push(Node *head, Node *insert)
+{
+	insert -> next = head;
+	return insert;
+}
 static Node *putBack(Column *head, Node *list, int k, int size)
 {
- 	Column *colMover = head->next;
+  //RECOMBINING LINKED LIST
+  //CANT FIGURE OUT HOW TO RETURN WHOLE LINKEDLIST -> LIST WONT UPDATE 
+  //LIST STAYS THE FIRST NODE IN THE COLUMN INSTEAD OF UPDATING
+	int counter = 0;
+
+	Column *colMover = head;
+	Node *temp = NULL;
+
+	while(((++counter) % (size + 1)) != 0)
+	{
+		if(colMover == NULL)
+			colMover = head;
+		temp = colMover -> node -> next;
+		colMover -> node -> next = NULL;
+		list = push(list, colMover -> node);
+		colMover -> node = temp;
+		colMover = colMover->next;
+	}
+	return list;
+
+	/*Column *colMover = head->next;
 	Node *temp = NULL;
 	int counter = 0;
 
-	list = head->node;
+	list = head -> node;
 	Node *listMover = list;
-	
 	temp = head->node->next;
 	listMover -> next = NULL;
-	head->node = temp;
+	head -> node = temp;
 
 	while(((++counter) % size) != 0)
 	{
-		if(colMover == NULL)
+		if(colMover == NULL)	
 			colMover = head;
 		temp = colMover -> node -> next;
 		listMover -> next = colMover -> node;
@@ -204,33 +190,56 @@ static Node *putBack(Column *head, Node *list, int k, int size)
 		colMover -> node = temp;
 		colMover = colMover -> next;
 	}
-	return list;
+
+	return list;*/
 }
 //--------------------------------------------------------------------------//
-Node *List_Shellsort(Node *List, long *n_comp, int size)
+static void reverse(Node ** head, int size)
+{
+	Node *prev;
+	Node *curr = (*head);
+	Node *next = NULL;
+	int counter = 0;
+	while(curr != NULL && counter < size) //&& (++counter) < size)
+	{
+		next = curr->next;
+		curr -> next = prev;
+		prev = curr;
+		curr = next;
+		printf("%d\n", (counter++));
+	}
+	(*head) = prev;
+}
+
+Node *List_Shellsort(Node *List, long *n_comp, int totalNums)
 {
   Column *head = NULL;
   head = malloc(sizeof(Column));
- 
+	head -> next = NULL;
+	head -> node = NULL;
+ 	Node *q = NULL;
   int k = 0;
-  while(k < size)
+  while(k < totalNums)
   {
     k = (k*3) + 1;
   }
+	int A_D_CHECK = 1;
   k = (k-1) / 3;
   head = buildColumns(head, k); 
-  while(k > 1)
+	if(k % 2 != 0)
+		A_D_CHECK = 0;
+  while(k > 0)
   {
-    head = addNodes(head, List, n_comp);
-    head = sortCol(head, n_comp);
-    List = putBack(head, List, k, size);
+    head = addNodes(head, List, n_comp, A_D_CHECK);
+		List = NULL;
+    List = putBack(head, (List), k, totalNums);
+		//reverse(&List, totalNums);
     head = deleteColumns(head);
     head = malloc(sizeof(Column));
-    if((k/3) > 1)
+    if((k/3) > 0)
       head = buildColumns(head, (k/3));
     k = (k-1) / 3;
   }
-	insertionSort(&List, n_comp);
   free(head);
   return(List);
 }
@@ -248,7 +257,6 @@ int List_Save_To_File(char *filename, Node *List)
   Node *listP = List;
   while(listP != NULL)
   {
-		//fprintf(stdout, "%ld\n", listP->value);
     fwrite(listP, sizeof(listP), 1, fptr);
     ++numSaves;
     listP = listP->next;

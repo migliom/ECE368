@@ -29,12 +29,14 @@ int main(int argc, char * * argv)
   if((argv[1][1]) == 'l')
   {
     Node *head = NULL;
-    head = List_Load_From_File(argv[2]);
-    Node *p = head;
-    head = List_Shellsort(head, &n_comp);
+		int totalCount = 0;
+    head = List_Load_From_File(argv[2], &totalCount);
+    head = List_Shellsort(head, &n_comp, totalCount);
+
     numbers_saved = List_Save_To_File(argv[3], head); 
-    //printf("Numbers saved to file: %d\nNumber of comparisons: %ld\n\n", numbers_saved, n_comp);
-   printf("Number of Comparisons: %ld\n", n_comp);
+		//printf("Numbers saved to file: %d\nNumber of comparisons: %ld\n\n", numbers_saved, n_comp);
+   fprintf(stdout,"Number of Comparisons: %ld\n", n_comp);
+	 Node *p = head;
    while(p!=NULL)
    {
      Node *temp = p->next;
