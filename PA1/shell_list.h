@@ -13,4 +13,6 @@ int List_Save_To_File(char *filename, Node *list);
 
 Node *List_Shellsort(Node *list, long *n_comp, int);
 
+void reverse(Node ** head);
+
 #endif

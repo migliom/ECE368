@@ -194,21 +194,24 @@ static Node *putBack(Column *head, Node *list, int k, int size)
 	return list;*/
 }
 //--------------------------------------------------------------------------//
-static void reverse(Node ** head, int size)
+static void reverseHelper(Node *curr, Node *prev, Node **head)
 {
-	Node *prev;
-	Node *curr = (*head);
-	Node *next = NULL;
-	int counter = 0;
-	while(curr != NULL && counter < size) //&& (++counter) < size)
-	{
-		next = curr->next;
-		curr -> next = prev;
-		prev = curr;
-		curr = next;
-		printf("%d\n", (counter++));
+	if(!curr->next){
+		*head = curr;
+		curr->next=prev;
+		return;
 	}
-	(*head) = prev;
+
+	Node *next = curr->next;
+	curr->next = prev;
+	reverseHelper(next, curr, head);
+}
+
+void reverse(Node ** head)
+{
+	if(head == NULL)
+		return;
+	reverseHelper(*head, NULL, head);
 }
 
 Node *List_Shellsort(Node *List, long *n_comp, int totalNums)
@@ -255,6 +258,9 @@ int List_Save_To_File(char *filename, Node *List)
     return(0);
   }
   Node *listP = List;
+	if(listP -> value > listP -> next -> value)
+		reverse(&listP);
+	int counter = 1;
   while(listP != NULL)
   {
     fwrite(listP, sizeof(listP), 1, fptr);
